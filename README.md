@@ -12,6 +12,11 @@ This version
   - Adds a Poetry file for dependency management
   - Makes numerous PEP8 changes
   - Rearranges the directory structure
+  - Removed catboost to allow more recent numpy
+  - Adds some additional tests
 
-The original README.md is below.
+The original project was released under the MIT license. This project is also released under the MIT license.
+
+In the unlikely event you have issues with this package, please contact me at the email address
+in the poetry file.
 
