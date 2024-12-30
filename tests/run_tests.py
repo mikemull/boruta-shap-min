@@ -1,6 +1,5 @@
 from boruta_shap_min.borutashap import BorutaShap, load_data
 from xgboost import XGBClassifier, XGBRegressor
-from catboost import CatBoostClassifier, CatBoostRegressor
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from lightgbm import LGBMClassifier, LGBMRegressor
@@ -26,12 +25,10 @@ def test_models(data_type, models):
 
 if __name__ == "__main__":
     tree_classifiers = {'tree-classifier': DecisionTreeClassifier(), 'forest-classifier': RandomForestClassifier(),
-                        'xgboost-classifier': XGBClassifier(), 'lightgbm-classifier': LGBMClassifier(),
-                        'catboost-classifier': CatBoostClassifier()}
+                        'xgboost-classifier': XGBClassifier(), 'lightgbm-classifier': LGBMClassifier()}
 
     tree_regressors = {'tree-regressor': DecisionTreeRegressor(), 'forest-regressor': RandomForestRegressor(),
-                       'xgboost-regressor': XGBRegressor(), 'lightgbm-regressor': LGBMRegressor(),
-                       'catboost-regressor': CatBoostRegressor()}
+                       'xgboost-regressor': XGBRegressor(), 'lightgbm-regressor': LGBMRegressor()}
 
     test_models('regression', tree_regressors)
     test_models('classification', tree_classifiers)

@@ -10,7 +10,6 @@ packages = [{include = "boruta_shap_min"}]
 python = "^3.11"
 scipy = "^1.14.1"
 llvmlite = "^0.43.0"
-numba = "^0.60.0"
 shap = "^0.46.0"
 statsmodels = "^0.14.4"
 matplotlib = "^3.10.0"
