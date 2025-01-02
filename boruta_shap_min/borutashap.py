@@ -273,7 +273,7 @@ class BorutaShap:
         else:
             try:
                 self.model.fit(X, y, sample_weight=sample_weight, verbose=False)
-            except Exception:  # TODO: specify exception
+            except TypeError:
                 self.model.fit(X, y, sample_weight=sample_weight)
 
     def fit(
@@ -648,8 +648,8 @@ class BorutaShap:
             if normalize:
                 vals = self.calculate_Zscore(vals)
 
-            x_feature_import = vals[: len(self.X.columns)]
-            shadow_feature_import = vals[len(self.X_shadow.columns) :]
+            x_feature_import = vals[:len(self.X.columns)]
+            shadow_feature_import = vals[len(self.X_shadow.columns):]
 
         elif self.importance_measure == "perm":
             # set default scoring as f1, can be changed to an argument for customizability
