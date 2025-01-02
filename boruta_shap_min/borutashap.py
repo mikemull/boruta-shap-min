@@ -405,9 +405,6 @@ class BorutaShap:
         self.store_feature_importance()
         self.calculate_rejected_accepted_tentative(verbose=verbose)
 
-    def transform(self, X):
-        return self.subset(self)
-
     def calculate_rejected_accepted_tentative(self, verbose):
         """
         Figures out which features have been either accepted rejeected or tentative
@@ -605,7 +602,7 @@ class BorutaShap:
         )
 
     @staticmethod
-    def calculate_Zscore(array):
+    def calculate_zscore(array):
         """
         Calculates the Z-score of an array
 
@@ -646,7 +643,7 @@ class BorutaShap:
             vals = self.shap_values
 
             if normalize:
-                vals = self.calculate_Zscore(vals)
+                vals = self.calculate_zscore(vals)
 
             x_feature_import = vals[:len(self.X.columns)]
             shadow_feature_import = vals[len(self.X_shadow.columns):]
@@ -659,7 +656,7 @@ class BorutaShap:
             perm_importances_ = perm_importances_.importances_mean
 
             if normalize:
-                perm_importances_ = self.calculate_Zscore(perm_importances_)
+                perm_importances_ = self.calculate_zscore(perm_importances_)
 
             x_feature_import = perm_importances_[: len(self.X.columns)]
             shadow_feature_import = perm_importances_[len(self.X.columns) :]
@@ -668,7 +665,7 @@ class BorutaShap:
             feature_importances_ = np.abs(self.model.feature_importances_)
 
             if normalize:
-                feature_importances_ = self.calculate_Zscore(feature_importances_)
+                feature_importances_ = self.calculate_zscore(feature_importances_)
 
             x_feature_import = feature_importances_[: len(self.X.columns)]
             shadow_feature_import = feature_importances_[len(self.X.columns) :]
