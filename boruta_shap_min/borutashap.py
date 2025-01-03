@@ -1,3 +1,4 @@
+import warnings
 
 from sklearn.ensemble import (
     RandomForestClassifier,
@@ -14,10 +15,9 @@ import pandas as pd
 import numpy as np
 from numpy.random import choice
 import seaborn as sns
-import shap
 
+from boruta_shap_min.shap import ShapExplainer
 
-import warnings
 
 warnings.filterwarnings("ignore")
 
@@ -44,7 +44,7 @@ class BorutaShap:
             be returned.
 
         importance_measure: String
-            Which importance measure too use either Shap or Gini/Gain
+            Which importance measure to use either Shap or Gini/Gain
 
         classification: Boolean
             if true then the problem is either a binary or multiclass problem otherwise if false then it is regression
@@ -54,9 +54,9 @@ class BorutaShap:
             would make the algorithm more lenient.
 
         pvalue: float
-            A float used as a significance level again if the p-value is increased the algorithm will be more lenient making it smaller
-            would make it more strict also by making the model more strict could impact runtime making it slower. As it will be less likley
-            to reject and accept features.
+            A float used as a significance level again if the p-value is increased the algorithm will be more
+            lenient making it smaller would make it more strict also by making the model more strict could
+            impact runtime making it slower. As it will be less likely to reject and accept features.
 
         """
 
@@ -88,21 +88,20 @@ class BorutaShap:
 
     def check_model(self):
         """
-        Checks that a model object has been passed as a parameter when intiializing the BorutaShap class.
+        Checks that a model object has been passed as a parameter when initializing the BorutaShap class.
 
         Returns
         -------
         Model Object
-            If no model specified then a base Random Forest will be returned otherwise the specifed model will
+            If no model specified then a base Random Forest will be returned otherwise the specified model will
             be returned.
 
         Raises
         ------
-        AttirbuteError
+        AttributeError
              If the model object does not have the required attributes.
 
         """
-
         check_fit = hasattr(self.model, "fit")
         check_predict_proba = hasattr(self.model, "predict")
 
@@ -133,11 +132,11 @@ class BorutaShap:
 
         Returns
         -------
-        Datframe
+        Dataframe
 
         Raises
         ------
-        AttirbuteError
+        AttributeError
              If the data is not of the expected type.
 
         """
@@ -206,11 +205,11 @@ class BorutaShap:
         """
         if self.stratify is not None and not self.classification:
             raise ValueError(
-                "Cannot take a strtified sample from continuous variable please bucket the variable and try again !"
+                "Cannot take a stratified sample from continuous variable please bucket the variable and try again !"
             )
 
         if self.train_or_test.lower() == "test":
-            # keeping the same naming convenetion as to not add complexit later on
+            # keeping the same naming convention as to not add complexity later on
             (
                 self.X_boruta_train,
                 self.X_boruta_test,
@@ -583,7 +582,7 @@ class BorutaShap:
         Creates the random shadow features by shuffling the existing columns.
 
         Returns:
-            Datframe with random permutations of the original columns.
+            Dataframe with random permutations of the original columns.
         """
         self.X_shadow = self.X.apply(np.random.permutation)
 
@@ -619,7 +618,7 @@ class BorutaShap:
 
     def feature_importance(self, normalize):
         """
-        Caculates the feature importances scores of the model
+        Calculates the feature importance scores of the model
 
         Parameters
         ----------
@@ -639,8 +638,8 @@ class BorutaShap:
         """
 
         if self.importance_measure == "shap":
-            self.explain()
-            vals = self.shap_values
+            xboruta = self.find_sample() if self.sample else self.X_boruta
+            vals = ShapExplainer(self.model, self.classification).explain(xboruta)
 
             if normalize:
                 vals = self.calculate_zscore(vals)
@@ -719,69 +718,6 @@ class BorutaShap:
 
         return self.X_boruta.iloc[sample_indices]
 
-    def explain(self):
-        """
-        The shap package has numerous variants of explainers which use different assumptions depending on the model
-        type this function allows the user to choose explainer
-
-        Returns:
-            shap values
-
-        Raise
-        ----------
-            ValueError:
-                if no model type has been specified tree as default
-        """
-
-        explainer = shap.TreeExplainer(
-            self.model, feature_perturbation="tree_path_dependent", approximate=True
-        )
-
-        if self.sample:
-            if self.classification:
-                # for some reason shap returns values wraped in a list of length 1
-
-                self.shap_values = np.array(explainer.shap_values(self.find_sample()))
-                if isinstance(self.shap_values, list):
-                    class_inds = range(len(self.shap_values))
-                    shap_imp = np.zeros(self.shap_values[0].shape[1])
-                    for i, ind in enumerate(class_inds):
-                        shap_imp += np.abs(self.shap_values[ind]).mean(0)
-                    self.shap_values /= len(self.shap_values)
-
-                elif len(self.shap_values.shape) == 3:
-                    self.shap_values = np.abs(self.shap_values).sum(axis=0)
-                    self.shap_values = self.shap_values.mean(axis=1)
-
-                else:
-                    self.shap_values = np.abs(self.shap_values).mean(0)
-
-            else:
-                self.shap_values = explainer.shap_values(self.find_sample())
-                self.shap_values = np.abs(self.shap_values).mean(0)
-
-        else:
-            if self.classification:
-                # for some reason shap returns values wraped in a list of length 1
-                self.shap_values = np.array(explainer.shap_values(self.X_boruta))
-                if isinstance(self.shap_values, list):
-                    class_inds = range(len(self.shap_values))
-                    shap_imp = np.zeros(self.shap_values[0].shape[1])
-                    for i, ind in enumerate(class_inds):
-                        shap_imp += np.abs(self.shap_values[ind]).mean(0)
-                    self.shap_values /= len(self.shap_values)
-
-                elif len(self.shap_values.shape) == 3:
-                    self.shap_values = np.abs(self.shap_values).sum(axis=0)
-                    self.shap_values = self.shap_values.mean(axis=1)
-
-                else:
-                    self.shap_values = np.abs(self.shap_values).mean(0)
-
-            else:
-                self.shap_values = explainer.shap_values(self.X_boruta)
-                self.shap_values = np.abs(self.shap_values).mean(0)
-
     @staticmethod
     def binomial_H0_test(array, n, p, alternative):
         """
@@ -824,7 +760,7 @@ class BorutaShap:
     def test_features(self, iteration):
         """
         For each feature with an undetermined importance perform a two-sided test of equality
-        with the maximum shadow value to determine if it is statistcally better
+        with the maximum shadow value to determine if it is statistically better
 
         Parameters
         ----------
