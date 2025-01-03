@@ -1,7 +1,7 @@
 import pytest
 
 import numpy as np
-from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from sklearn.tree import DecisionTreeRegressor
 
 from boruta_shap_min.borutashap import BorutaShap, load_data
 
